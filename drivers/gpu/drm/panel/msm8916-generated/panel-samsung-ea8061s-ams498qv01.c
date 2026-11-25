@@ -49,7 +49,26 @@ static int ea8061s_init(struct ea8061s_ams498qv01 *ctx)
 	mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0xf0, 0xa5, 0xa5);
 	mipi_dsi_msleep(&dsi_ctx, 120);
 
-	return dsi_ctx.accum_err;
+        {
+                static const u8 gamma_360[] = {
+                        0xca, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+                        0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
+                        0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
+                        0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
+                        0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
+                        0x00, 0x00, 0x00,
+                };
+
+                mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0xf0, 0x5a, 0x5a);
+                mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0xb5, 0x08, 0x7f, 0x0a, 0x00, 0x27);
+                mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0x55, 0x00);
+                mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0xb6, 0xcc, 0x87);
+                mipi_dsi_dcs_write_buffer_multi(&dsi_ctx, gamma_360, sizeof(gamma_360));
+                mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0xf7, 0x03);
+                mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0xf0, 0xa5, 0xa5);
+        }
+
+        return dsi_ctx.accum_err;
 }
 
 static int ea8061s_enable(struct drm_panel *panel)
@@ -58,7 +77,7 @@ static int ea8061s_enable(struct drm_panel *panel)
 	struct mipi_dsi_multi_context dsi_ctx = { .dsi = ctx->dsi };
 
 	mipi_dsi_dcs_set_display_on_multi(&dsi_ctx);
-	return dsi_ctx.accum_err;
+        return dsi_ctx.accum_err;
 }
 
 static int ea8061s_disable(struct drm_panel *panel)
@@ -164,8 +183,9 @@ static int ea8061s_probe(struct mipi_dsi_device *dsi)
 	dsi->lanes = 2;
 	dsi->format = MIPI_DSI_FMT_RGB888;
 	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
-			  MIPI_DSI_MODE_NO_EOT_PACKET;
+			  MIPI_DSI_MODE_NO_EOT_PACKET | MIPI_DSI_MODE_LPM;
 
+	ctx->panel.prepare_prev_first = true;
 	drm_panel_add(&ctx->panel);
 	ret = mipi_dsi_attach(dsi);
 	if (ret) {

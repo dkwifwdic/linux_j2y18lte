@@ -289,18 +289,21 @@
 
 
 &mdss {
-	status = "disabled";
+	status = "okay";
 };
 
 &mdss_dsi0 {
+	status = "okay";
 	vdda-supply = <&pm8937_l2>;
 	vddio-supply = <&pm8937_l6>;
 
-	status = "disabled";
 
 	panel@0 {
 		compatible = "samsung,ea8061s-ams498qv01";
 		reg = <0>;
+
+		enable-gpios = <&tlmm 64 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&tlmm 60 GPIO_ACTIVE_LOW>;
 
 		port {
 			panel_in: endpoint {
@@ -318,7 +321,7 @@
 &mdss_dsi0_phy {
 	vddio-supply = <&pm8937_l6>;
 	qcom,dsi-phy-regulator-ldo-mode;
-	status = "disabled";
+	status = "okay";
 };
 
 &xo_board {
@@ -526,5 +529,13 @@
 	vdd-cdc-io-supply = <&pm8937_l5>;
 	vdd-cdc-tx-rx-cx-supply = <&pm8937_s4>;
 	vdd-micbias-supply = <&pm8937_l13>;
+	status = "okay";
+};
+
+&gpu {
+	status = "okay";
+};
+
+&gpu_iommu {
 	status = "okay";
 };
